@@ -225,7 +225,7 @@ function showResults() {
   const tiers = groupByTier(sorted);
   resultDiv.innerHTML = "<h2>あなたのランキング</h2>" +
     Object.entries(tiers).map(([tier, chars]) => {
-      return `<h3>${tier}</h3><div style='display:flex; flex-wrap:wrap; justify-content:center;'>` +
+      return `<h3>${tier}</h3><div class="tier-group">` +
         chars.map(c => `
           <div style=\"margin: 10px; text-align:center;\">
             <img src=\"${c.image}\" alt=\"${c.name}\" style=\"width:100px; height:100px;\"><br>
