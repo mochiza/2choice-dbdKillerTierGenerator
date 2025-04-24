@@ -171,6 +171,16 @@ function updateElo(winner, loser, k = 50) {
   loser.score -= Math.round(k * (1 - expected));
 }
 
+function saveResultAsImage() {
+  const resultElement = document.getElementById("result");
+  html2canvas(resultElement).then(canvas => {
+    const link = document.createElement("a");
+    link.download = "ranking.png";
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  });
+}
+
 function shareOnTwitter() {
   const resultText = "あなたのキャラクターランキングはここです！"; // 共有するテキスト
   const url = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(resultText) + "&url=" + encodeURIComponent(window.location.href);
@@ -196,6 +206,11 @@ function showResults() {
           </div>`).join("") +
         "</div>";
     }).join("");
+
+  const saveBtn = document.createElement("button");
+  saveBtn.textContent = "結果を画像として保存";
+  saveBtn.onclick = saveResultAsImage;
+  resultDiv.appendChild(saveBtn);
 
   // Twitterでシェアするボタンを追加
   const shareButton = document.createElement("button");
