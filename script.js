@@ -53,6 +53,13 @@ const Bimg = document.getElementById("charB");
 const countDisplay = document.getElementById("count");
 const resultDiv = document.getElementById("result");
 
+// ローディング中の表示要素を作成
+const loadingText = document.createElement("p");
+loadingText.id = "loading";
+loadingText.textContent = "読み込み中...";
+loadingText.style.display = "none";
+document.body.insertBefore(loadingText, document.getElementById("comparison"));
+
 const stopButton = document.createElement("button");
 stopButton.textContent = "途中で終了して結果を見る";
 stopButton.onclick = showResults;
@@ -146,6 +153,26 @@ function displayPair([i, j]) {
   currentPair = [i, j];
   shownCharacters.add(i);
   shownCharacters.add(j);
+  
+  // 一旦クリック無効化 + ローディング表示
+  Aimg.onclick = null;
+  Bimg.onclick = null;
+  loadingText.style.display = "block";
+
+  // 両方の画像が読み込まれるのを待ってからクリックを有効にする
+  let loadedCount = 0;
+  function tryEnableClick() {
+    loadedCount++;
+    if (loadedCount === 2) {
+      loadingText.style.display = "none";
+      Aimg.onclick = () => vote(i, j);
+      Bimg.onclick = () => vote(j, i);
+    }
+  }
+
+  Aimg.onload = tryEnableClick;
+  Bimg.onload = tryEnableClick;
+
   Aimg.src = characters[i].image;
   Bimg.src = characters[j].image;
   Aimg.onclick = () => vote(i, j);
