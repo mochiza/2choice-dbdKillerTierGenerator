@@ -1,0 +1,207 @@
+// キャラクター初期データ
+const characters = [
+  { name: "エクセキューショナー", image: "img/エクセキューショナー.png", score: 1500 },
+  { name: "鬼", image: "img/おに.png", score: 1500 },
+  { name: "カニバル", image: "img/カニバル.png", score: 1500 },
+  { name: "グール", image: "img/グール.png", score: 1500 },
+  { name: "クラウン", image: "img/クラウン.png", score: 1500 },
+  { name: "ゴーストフェイス", image: "img/ゴーストフェイス.png", score: 1500 },
+  { name: "貞子", image: "img/さだこ.png", score: 1500 },
+  { name: "シェイプ", image: "img/シェイプ.png", score: 1500 },
+  { name: "シンギュラリティ", image: "img/シンギュラリティ.png", score: 1500 },
+  { name: "スカルマーチャント", image: "img/スカルマーチャント.png", score: 1500 },
+  { name: "スピリット", image: "img/スピリット.png", score: 1500 },
+  { name: "ゼノモーフ", image: "img/ゼノモーフ.png", score: 1500 },
+  { name: "セノバイト", image: "img/セノバイト.png", score: 1500 },
+  { name: "ダークロード", image: "img/ダークロード.png", score: 1500 },
+  { name: "チャッキー", image: "img/チャッキー.png", score: 1500 },
+  { name: "ツインズ", image: "img/ツインズ.png", score: 1500 },
+  { name: "デススリンガー", image: "img/デススリンガー.png", score: 1500 },
+  { name: "デモゴルゴン", image: "img/デモゴルゴン.png", score: 1500 },
+  { name: "ドクター", image: "img/ドクター.png", score: 1500 },
+  { name: "トラッパー", image: "img/トラッパー.png", score: 1500 },
+  { name: "トリックスター", image: "img/トリックスター.png", score: 1500 },
+  { name: "ドレッジ", image: "img/ドレッジ.png", score: 1500 },
+  { name: "ナース", image: "img/ナース.png", score: 1500 },
+  { name: "ナイト", image: "img/ナイト.png", score: 1500 },
+  { name: "ネメシス", image: "img/ネメシス.png", score: 1500 },
+  { name: "ハウンドマスター", image: "img/ハウンドマスター.png", score: 1500 },
+  { name: "ハグ", image: "img/ハグ.png", score: 1500 },
+  { name: "ハントレス", image: "img/ハントレス.png", score: 1500 },
+  { name: "ピッグ", image: "img/ピッグ.png", score: 1500 },
+  { name: "ヒルビリー", image: "img/ヒルビリー.png", score: 1500 },
+  { name: "ブライト", image: "img/ブライト.png", score: 1500 },
+  { name: "プレイグ", image: "img/プレイグ.png", score: 1500 },
+  { name: "フレディ", image: "img/フレディ.png", score: 1500 },
+  { name: "リージョン", image: "img/リージョン.png", score: 1500 },
+  { name: "リッチ", image: "img/リッチ.png", score: 1500 },
+  { name: "レイス", image: "img/レイス.png", score: 1500 },
+  { name: "アーティスト", image: "img/アーティスト.png", score: 1500 },
+  { name: "アンノウン", image: "img/アンノウン.png", score: 1500 },
+  { name: "ウェスカー", image: "img/ウェスカー.png", score: 1500 },
+];
+
+let comparisonLog = new Set();
+let winMap = new Map();
+let count = 0;
+let maxComparisons = 100;
+let currentPair = [];
+const shownCharacters = new Set();
+
+const Aimg = document.getElementById("charA");
+const Bimg = document.getElementById("charB");
+const countDisplay = document.getElementById("count");
+const resultDiv = document.getElementById("result");
+
+const stopButton = document.createElement("button");
+stopButton.textContent = "途中で終了して結果を見る";
+stopButton.onclick = showResults;
+document.body.appendChild(stopButton);
+
+const retryButton = document.createElement("button");
+retryButton.textContent = "さらに50回比較する";
+retryButton.style.display = "none";
+retryButton.onclick = () => {
+  maxComparisons += 50;
+  resultDiv.style.display = "none";
+  document.getElementById("comparison").style.display = "block";
+  countDisplay.style.display = "block";
+  stopButton.style.display = "inline-block";
+  retryButton.style.display = "none";
+  displayPair(getNextPair());
+};
+document.body.appendChild(retryButton);
+
+function addWinRelation(winnerIndex, loserIndex) {
+  if (!winMap.has(winnerIndex)) winMap.set(winnerIndex, new Set());
+  winMap.get(winnerIndex).add(loserIndex);
+}
+
+function canInferWin(winnerIndex, loserIndex, visited = new Set()) {
+  if (!winMap.has(winnerIndex)) return false;
+  if (winMap.get(winnerIndex).has(loserIndex)) return true;
+  for (let next of winMap.get(winnerIndex)) {
+    if (visited.has(next)) continue;
+    visited.add(next);
+    if (canInferWin(next, loserIndex, visited)) return true;
+  }
+  return false;
+}
+
+function isComparedOrInferable(i, j) {
+  return comparisonLog.has(`${i}_${j}`) ||
+         comparisonLog.has(`${j}_${i}`) ||
+         canInferWin(i, j) ||
+         canInferWin(j, i);
+}
+
+function getTierName(score) {
+  if (score >= 1600) return "Sティア";
+  if (score >= 1550) return "Aティア";
+  if (score >= 1500) return "Bティア";
+  if (score >= 1475) return "Cティア";
+  if (score >= 1450) return "Dティア";
+  return "Eティア";
+}
+
+function groupByTier(characters) {
+  const tiers = {};
+  for (const char of characters) {
+    const tier = getTierName(char.score);
+    if (!tiers[tier]) tiers[tier] = [];
+    tiers[tier].push(char);
+  }
+  return tiers;
+}
+
+function getNextPair() {
+  const unshown = characters.map((_, i) => i).filter(i => !shownCharacters.has(i));
+  if (unshown.length >= 2) {
+    let i = unshown[Math.floor(Math.random() * unshown.length)];
+    let j;
+    do {
+      j = Math.floor(Math.random() * characters.length);
+    } while (j === i || isComparedOrInferable(i, j));
+    return [i, j];
+  }
+  if (count < 30) {
+    let i, j;
+    do {
+      i = Math.floor(Math.random() * characters.length);
+      j = Math.floor(Math.random() * characters.length);
+    } while (i === j || isComparedOrInferable(i, j));
+    return [i, j];
+  } else {
+    const sorted = [...characters].sort((a, b) => b.score - a.score);
+    for (let i = 0; i < sorted.length - 1; i++) {
+      const a = characters.indexOf(sorted[i]);
+      const b = characters.indexOf(sorted[i + 1]);
+      if (!isComparedOrInferable(a, b)) return [a, b];
+    }
+    return getNextPair();
+  }
+}
+
+function displayPair([i, j]) {
+  currentPair = [i, j];
+  shownCharacters.add(i);
+  shownCharacters.add(j);
+  Aimg.src = characters[i].image;
+  Bimg.src = characters[j].image;
+  Aimg.onclick = () => vote(i, j);
+  Bimg.onclick = () => vote(j, i);
+}
+
+function vote(winnerIndex, loserIndex) {
+  updateElo(characters[winnerIndex], characters[loserIndex]);
+  comparisonLog.add(`${winnerIndex}_${loserIndex}`);
+  addWinRelation(winnerIndex, loserIndex);
+  count++;
+  countDisplay.textContent = `${count} / ${maxComparisons}回 比較中`;
+  if (count >= maxComparisons) {
+    showResults();
+  } else {
+    displayPair(getNextPair());
+  }
+}
+
+function updateElo(winner, loser, k = 50) {
+  const expected = 1 / (1 + Math.pow(10, (loser.score - winner.score) / 400));
+  winner.score += Math.round(k * (1 - expected));
+  loser.score -= Math.round(k * (1 - expected));
+}
+
+function shareOnTwitter() {
+  const resultText = "あなたのキャラクターランキングはここです！"; // 共有するテキスト
+  const url = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(resultText) + "&url=" + encodeURIComponent(window.location.href);
+  window.open(url, "_blank");
+}
+
+function showResults() {
+  document.getElementById("comparison").style.display = "none";
+  countDisplay.style.display = "none";
+  stopButton.style.display = "none";
+  retryButton.style.display = "inline-block";
+  resultDiv.style.display = "block";
+
+  const sorted = [...characters].sort((a, b) => b.score - a.score);
+  const tiers = groupByTier(sorted);
+  resultDiv.innerHTML = "<h2>あなたのランキング</h2>" +
+    Object.entries(tiers).map(([tier, chars]) => {
+      return `<h3>${tier}</h3><div style='display:flex; flex-wrap:wrap; justify-content:center;'>` +
+        chars.map(c => `
+          <div style=\"margin: 10px; text-align:center;\">
+            <img src=\"${c.image}\" alt=\"${c.name}\" style=\"width:100px; height:100px;\"><br>
+            ${c.name}
+          </div>`).join("") +
+        "</div>";
+    }).join("");
+
+  // Twitterでシェアするボタンを追加
+  const shareButton = document.createElement("button");
+  shareButton.textContent = "Twitterでシェア";
+  shareButton.onclick = shareOnTwitter; // シェア関数を呼び出し
+  document.body.appendChild(shareButton);
+}
+
+displayPair(getNextPair());

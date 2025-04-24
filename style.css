@@ -1,0 +1,15 @@
+body {
+  font-family: sans-serif;
+  text-align: center;
+}
+#comparison img {
+  width: 200px;
+  height: 150px;
+  cursor: pointer;
+  margin: 10px;
+}
+#result ol {
+  text-align: left;
+  display: inline-block;
+  margin: 0 auto;
+}
