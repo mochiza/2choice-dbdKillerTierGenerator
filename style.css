@@ -18,7 +18,7 @@ body {
 
 .tier-group {
   display: grid;
-  grid-template-columns: repeat(5, 1fr); /* ← ここを6に変えると6体1行 */
+  grid-template-columns: repeat(4, 1fr); /* ← ここを6に変えると6体1行 */
   gap: 10px;
   justify-items: center;
 }
