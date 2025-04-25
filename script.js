@@ -95,40 +95,11 @@ function canInferWin(winnerIndex, loserIndex, visited = new Set()) {
   return false;
 }
 
-function isInferable(i, j) {
-  const visited = new Set();
-  const stack = [i];
-
-  while (stack.length > 0) {
-    const current = stack.pop();
-    if (current === j) return true;
-    visited.add(current);
-    for (const neighbor of graph[current] || []) {
-      if (!visited.has(neighbor)) {
-        stack.push(neighbor);
-      }
-    }
-  }
-
-  const reverseVisited = new Set();
-  const reverseStack = [j];
-
-  while (reverseStack.length > 0) {
-    const current = reverseStack.pop();
-    if (current === i) return true;
-    reverseVisited.add(current);
-    for (const neighbor of graph[current] || []) {
-      if (!reverseVisited.has(neighbor)) {
-        reverseStack.push(neighbor);
-      }
-    }
-  }
-
-  return false;
-}
-
 function isComparedOrInferable(i, j) {
-  return comparedPairs.has(pairKey(i, j)) || isInferable(i, j);
+  return comparisonLog.has(`${i}_${j}`) ||
+         comparisonLog.has(`${j}_${i}`) ||
+         canInferWin(i, j) ||
+         canInferWin(j, i);
 }
 
 function getTierName(score) {
@@ -167,36 +138,17 @@ function getNextPair() {
       .filter(({ c }) => c.score >= min && c.score < max);
 
     if (inRange.length >= 2) {
-      const pairs = [];
-
-      // 全ての組み合わせを作る（順不同）
-      for (let i = 0; i < inRange.length; i++) {
-        for (let j = i + 1; j < inRange.length; j++) {
-          const a = inRange[i].idx;
-          const b = inRange[j].idx;
-          const compared = comparedPairs.has(pairKey(a, b));
-          const inferable = isInferable(a, b);
-
-          let priority;
-          if (!compared && !inferable) {
-            priority = 1; // 比較されていなく、推測不可能なペア
-          } else if (!compared && inferable) {
-            priority = 2; // 比較されていなく、推測可能なペア
-          } else {
-            priority = 3; // それ以外（比較済み）
-          }
-
-          pairs.push({ a, b, priority });
-        }
+      let attempts = 0;
+      let i, j;
+      do {
+        i = inRange[Math.floor(Math.random() * inRange.length)].idx;
+        j = inRange[Math.floor(Math.random() * inRange.length)].idx;
+        attempts++;
+      } while ((i === j || isComparedOrInferable(i, j)) && attempts < 50);
+      if (attempts < 50) {
+        return [i, j];
       }
-
-      // 優先度でソート（優先度が低い順にソート）
-      pairs.sort((x, y) => x.priority - y.priority);
-
-      if (pairs.length > 0) {
-        const { a, b } = pairs[0]; // 最も優先度の高い組み合わせを返す
-        return [a, b];
-      }
+      // 条件を満たすペアが見つからなければ、通常の処理に進む（何もしないで次へ）
     }
   }
   
