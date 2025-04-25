@@ -130,7 +130,20 @@ function groupByTier(characters) {
 }
 
 function getNextPair() {
-  // 特定範囲の比較を挟む（最後の20回 or 追加20回）
+  // 特定範囲の比較を挟む（最後の20回 追加20回 追加40回）
+  if (count >= maxComparisons + 20) {
+    let attempts = 0;
+    do {
+      const sorted = [...characters].sort((a, b) => b.score - a.score);
+      for (let i = 0; i < sorted.length - 1; i++) {
+        const a = characters.indexOf(sorted[i]);
+        const b = characters.indexOf(sorted[i + 1]);
+      }
+      attempts++;
+    } while (isComparedOrInferable(a, b) && attempts < 50);
+      return [a, b];
+  }
+  
   if (count >= maxComparisons - 20) {
     const ranges = [
       [1450, 1475],
@@ -168,10 +181,7 @@ function getNextPair() {
       for (let i = 0; i < sorted.length - 1; i++) {
         const a = characters.indexOf(sorted[i]);
         const b = characters.indexOf(sorted[i + 1]);
-        if (!a === b) {
-          return [a, b];
-        }
-        return [i, j];
+        return [a, b];
       }
     }
     
@@ -204,10 +214,7 @@ function getNextPair() {
       for (let i = 0; i < sorted.length - 1; i++) {
         const a = characters.indexOf(sorted[i]);
         const b = characters.indexOf(sorted[i + 1]);
-        if (!a === b) {
-          return [a, b];
-        }
-        return [i, j];
+        return [a, b];
       }
     }
   }
