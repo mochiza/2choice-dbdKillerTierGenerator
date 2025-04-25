@@ -95,11 +95,40 @@ function canInferWin(winnerIndex, loserIndex, visited = new Set()) {
   return false;
 }
 
+function isInferable(i, j) {
+  const visited = new Set();
+  const stack = [i];
+
+  while (stack.length > 0) {
+    const current = stack.pop();
+    if (current === j) return true;
+    visited.add(current);
+    for (const neighbor of graph[current] || []) {
+      if (!visited.has(neighbor)) {
+        stack.push(neighbor);
+      }
+    }
+  }
+
+  const reverseVisited = new Set();
+  const reverseStack = [j];
+
+  while (reverseStack.length > 0) {
+    const current = reverseStack.pop();
+    if (current === i) return true;
+    reverseVisited.add(current);
+    for (const neighbor of graph[current] || []) {
+      if (!reverseVisited.has(neighbor)) {
+        reverseStack.push(neighbor);
+      }
+    }
+  }
+
+  return false;
+}
+
 function isComparedOrInferable(i, j) {
-  return comparisonLog.has(`${i}_${j}`) ||
-         comparisonLog.has(`${j}_${i}`) ||
-         canInferWin(i, j) ||
-         canInferWin(j, i);
+  return comparedPairs.has(pairKey(i, j)) || isInferable(i, j);
 }
 
 function getTierName(score) {
