@@ -144,7 +144,7 @@ function getNextPair() {
         i = inRange[Math.floor(Math.random() * inRange.length)].idx;
         j = inRange[Math.floor(Math.random() * inRange.length)].idx;
         attempts++;
-      } while ((i === j || isComparedOrInferable(i, j)) && attempts < 50);
+      } while (i === j || (isComparedOrInferable(i, j) && attempts < 50));
       return [i, j];
     }
   }
