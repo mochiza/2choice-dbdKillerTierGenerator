@@ -138,17 +138,28 @@ function getNextPair() {
       .filter(({ c }) => c.score >= min && c.score < max);
 
     if (inRange.length >= 2) {
-      let attempts = 0;
-      let i, j;
-      do {
-        i = inRange[Math.floor(Math.random() * inRange.length)].idx;
-        j = inRange[Math.floor(Math.random() * inRange.length)].idx;
-        attempts++;
-      } while ((i === j || isComparedOrInferable(i, j)) && attempts < 50);
-      if (attempts < 50) {
-        return [i, j];
+      const pairs = [];
+
+      // 全ての組み合わせを作る（順不同）
+      for (let i = 0; i < inRange.length; i++) {
+        for (let j = i + 1; j < inRange.length; j++) {
+          const a = inRange[i].idx;
+          const b = inRange[j].idx;
+          const compared = comparedPairs.has(pairKey(a, b));
+          const inferable = isInferable(a, b);
+
+          let priority = compared ? 3 : (inferable ? 2 : 1);
+          pairs.push({ a, b, priority });
+        }
       }
-      // 条件を満たすペアが見つからなければ、通常の処理に進む（何もしないで次へ）
+
+      // 優先度でソート
+      pairs.sort((x, y) => x.priority - y.priority);
+
+      if (pairs.length > 0) {
+        const { a, b } = pairs[0]; // 最も優先度の高い組み合わせを返す
+        return [a, b];
+      }
     }
   }
   
