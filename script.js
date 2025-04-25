@@ -142,6 +142,25 @@ function getNextPair() {
       }
       attempts++;
     } while (isComparedOrInferable(a, b) && attempts < 50);
+    if (attempts < 50) {
+      return [a, b];
+    }
+    do {
+      const sorted = [...characters].sort((a, b) => b.score - a.score);
+      for (let i = 0; i < sorted.length - 1; i++) {
+        const a = characters.indexOf(sorted[i]);
+        const b = characters.indexOf(sorted[i + 1]);
+      }
+      attempts++;
+    } while (hasBeenCompared(a, b) && attempts < 100);
+    if (attempts < 100) {
+      return [a, b];
+    }
+    const sorted = [...characters].sort((a, b) => b.score - a.score);
+    for (let i = 0; i < sorted.length - 1; i++) {
+      const a = characters.indexOf(sorted[i]);
+      const b = characters.indexOf(sorted[i + 1]);
+    }
     if (!isSameAsLastPair(a, b)) return [a, b];
     do {
       a = inRange[Math.floor(Math.random() * inRange.length)].idx;
