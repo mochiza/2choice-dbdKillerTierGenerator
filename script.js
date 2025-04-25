@@ -95,11 +95,19 @@ function canInferWin(winnerIndex, loserIndex, visited = new Set()) {
   return false;
 }
 
+function hasBeenCompared(i, j) {
+  // `i` と `j` がすでに比較されたかを確認
+  return comparisonLog.has(`${i}_${j}`) || comparisonLog.has(`${j}_${i}`);
+}
+
+function canInferWinFromHistory(i, j) {
+  // `i` が `j` に勝つ可能性が推測できるかを確認
+  return canInferWin(i, j) || canInferWin(j, i);
+}
+
 function isComparedOrInferable(i, j) {
-  return comparisonLog.has(`${i}_${j}`) ||
-         comparisonLog.has(`${j}_${i}`) ||
-         canInferWin(i, j) ||
-         canInferWin(j, i);
+  // `i` と `j` がすでに比較されたか、または比較結果が推測可能かをチェック
+  return hasBeenCompared(i, j) || canInferWinFromHistory(i, j);
 }
 
 function getTierName(score) {
@@ -145,6 +153,14 @@ function getNextPair() {
         j = inRange[Math.floor(Math.random() * inRange.length)].idx;
         attempts++;
       } while (i === j || (isComparedOrInferable(i, j) && attempts < 50));
+      if (attempts < 50) {
+        return [i, j];
+      }
+      do {
+        i = inRange[Math.floor(Math.random() * inRange.length)].idx;
+        j = inRange[Math.floor(Math.random() * inRange.length)].idx;
+        attempts++;
+      } while (i === j || (hasBeenCompared(i, j) && attempts < 100));
       return [i, j];
     }
   }
