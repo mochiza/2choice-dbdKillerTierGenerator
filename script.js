@@ -66,10 +66,10 @@ stopButton.onclick = showResults;
 document.body.appendChild(stopButton);
 
 const retryButton = document.createElement("button");
-retryButton.textContent = "さらに50回比較する";
+retryButton.textContent = "さらに20回比較する";
 retryButton.style.display = "none";
 retryButton.onclick = () => {
-  maxComparisons += 50;
+  maxComparisons += 20;
   resultDiv.style.display = "none";
   document.getElementById("comparison").style.display = "block";
   countDisplay.style.display = "block";
@@ -122,6 +122,31 @@ function groupByTier(characters) {
 }
 
 function getNextPair() {
+  // 特定範囲の比較を挟む（最後の20回 or 追加20回）
+  if (count >= maxComparisons - 20) {
+    const ranges = [
+      [1450, 1475],
+      [1475, 1500],
+      [1500, 1550],
+      [1550, 1600]
+    ];
+    const rangeIndex = Math.floor((count - (maxComparisons - 20)) / 5);
+    const [min, max] = ranges[rangeIndex];
+
+    const inRange = characters
+      .map((c, idx) => ({ c, idx }))
+      .filter(({ c }) => c.score >= min && c.score < max);
+
+    if (inRange.length >= 2) {
+      let i, j;
+      do {
+        i = inRange[Math.floor(Math.random() * inRange.length)].idx;
+        j = inRange[Math.floor(Math.random() * inRange.length)].idx;
+      } while (i === j || isComparedOrInferable(i, j));
+      return [i, j];
+    }
+  }
+  
   const unshown = characters.map((_, i) => i).filter(i => !shownCharacters.has(i));
   if (unshown.length >= 2) {
     let i = unshown[Math.floor(Math.random() * unshown.length)];
