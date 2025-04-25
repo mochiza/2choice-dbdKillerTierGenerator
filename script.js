@@ -192,7 +192,7 @@ function vote(winnerIndex, loserIndex) {
   }
 }
 
-function updateElo(winner, loser, k = 50) {
+function updateElo(winner, loser, k = 32) {
   const expected = 1 / (1 + Math.pow(10, (loser.score - winner.score) / 400));
   winner.score += Math.round(k * (1 - expected));
   loser.score -= Math.round(k * (1 - expected));
