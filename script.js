@@ -145,10 +145,7 @@ function getNextPair() {
         j = inRange[Math.floor(Math.random() * inRange.length)].idx;
         attempts++;
       } while ((i === j || isComparedOrInferable(i, j)) && attempts < 50);
-      if (attempts < 50) {
-        return [i, j];
-      }
-      // 条件を満たすペアが見つからなければ、通常の処理に進む（何もしないで次へ）
+      return [i, j];
     }
   }
   
