@@ -177,12 +177,20 @@ function getNextPair() {
           const compared = comparedPairs.has(pairKey(a, b));
           const inferable = isInferable(a, b);
 
-          let priority = compared ? 3 : (inferable ? 2 : 1);
+          let priority;
+          if (!compared && !inferable) {
+            priority = 1; // 比較されていなく、推測不可能なペア
+          } else if (!compared && inferable) {
+            priority = 2; // 比較されていなく、推測可能なペア
+          } else {
+            priority = 3; // それ以外（比較済み）
+          }
+
           pairs.push({ a, b, priority });
         }
       }
 
-      // 優先度でソート
+      // 優先度でソート（優先度が低い順にソート）
       pairs.sort((x, y) => x.priority - y.priority);
 
       if (pairs.length > 0) {
