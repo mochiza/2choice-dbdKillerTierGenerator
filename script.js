@@ -161,12 +161,23 @@ function getNextPair() {
         j = inRange[Math.floor(Math.random() * inRange.length)].idx;
         attempts++;
       } while (i === j || (hasBeenCompared(i, j) && attempts < 100));
-      return [i, j];
+      if (attempts < 100) {
+        return [i, j];
+      }
+      const sorted = [...characters].sort((a, b) => b.score - a.score);
+      for (let i = 0; i < sorted.length - 1; i++) {
+        const a = characters.indexOf(sorted[i]);
+        const b = characters.indexOf(sorted[i + 1]);
+        if (!a === b) {
+          return [a, b];
+        }
+        return [i, j];
+      }
     }
     
     if (inRange.length < 2) {
-      min = Math.max(0, min - 25);  // 最小値を0以下にしないように調整
-      max = max + 25;
+      min = Math.max(0, min - 50);  // 最小値を0以下にしないように調整
+      max = max + 50;
       
       inRange = characters
         .map((c, idx) => ({ c, idx }))
@@ -186,7 +197,18 @@ function getNextPair() {
         j = inRange[Math.floor(Math.random() * inRange.length)].idx;
         attempts++;
       } while (i === j || (hasBeenCompared(i, j) && attempts < 100));
-      return [i, j];
+      if (attempts < 100) {
+        return [i, j];
+      }
+      const sorted = [...characters].sort((a, b) => b.score - a.score);
+      for (let i = 0; i < sorted.length - 1; i++) {
+        const a = characters.indexOf(sorted[i]);
+        const b = characters.indexOf(sorted[i + 1]);
+        if (!a === b) {
+          return [a, b];
+        }
+        return [i, j];
+      }
     }
   }
   
