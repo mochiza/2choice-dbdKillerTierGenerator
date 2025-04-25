@@ -163,6 +163,31 @@ function getNextPair() {
       } while (i === j || (hasBeenCompared(i, j) && attempts < 100));
       return [i, j];
     }
+    
+    if (inRange.length < 2) {
+      min = Math.max(0, min - 25);  // 最小値を0以下にしないように調整
+      max = max + 25;
+      
+      inRange = characters
+        .map((c, idx) => ({ c, idx }))
+        .filter(({ c }) => c.score >= min && c.score < max);
+        
+      attempts = 0;
+      do {
+        i = inRange[Math.floor(Math.random() * inRange.length)].idx;
+        j = inRange[Math.floor(Math.random() * inRange.length)].idx;
+        attempts++;
+      } while (i === j || (isComparedOrInferable(i, j) && attempts < 50));
+      if (attempts < 50) {
+        return [i, j];
+      }
+      do {
+        i = inRange[Math.floor(Math.random() * inRange.length)].idx;
+        j = inRange[Math.floor(Math.random() * inRange.length)].idx;
+        attempts++;
+      } while (i === j || (hasBeenCompared(i, j) && attempts < 100));
+      return [i, j];
+    }
   }
   
   const unshown = characters.map((_, i) => i).filter(i => !shownCharacters.has(i));
