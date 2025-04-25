@@ -138,12 +138,17 @@ function getNextPair() {
       .filter(({ c }) => c.score >= min && c.score < max);
 
     if (inRange.length >= 2) {
+      let attempts = 0;
       let i, j;
       do {
         i = inRange[Math.floor(Math.random() * inRange.length)].idx;
         j = inRange[Math.floor(Math.random() * inRange.length)].idx;
-      } while (i === j || isComparedOrInferable(i, j));
-      return [i, j];
+        attempts++;
+      } while ((i === j || isComparedOrInferable(i, j)) && attempts < 50);
+      if (attempts < 50) {
+        return [i, j];
+      }
+      // 条件を満たすペアが見つからなければ、通常の処理に進む（何もしないで次へ）
     }
   }
   
