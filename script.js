@@ -131,7 +131,7 @@ function getNextPair() {
     } while (j === i || isComparedOrInferable(i, j));
     return [i, j];
   }
-  if (count < 30) {
+  if (count < 40) {
     let i, j;
     do {
       i = Math.floor(Math.random() * characters.length);
