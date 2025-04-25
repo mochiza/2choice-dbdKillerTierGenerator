@@ -46,6 +46,7 @@ let winMap = new Map();
 let count = 0;
 let maxComparisons = 100;
 let currentPair = [];
+let lastPairKey = null; // 最後に比較したペアを記録
 const shownCharacters = new Set();
 
 const Aimg = document.getElementById("charA");
@@ -141,7 +142,12 @@ function getNextPair() {
       }
       attempts++;
     } while (isComparedOrInferable(a, b) && attempts < 50);
-      return [a, b];
+    if (!isSameAsLastPair(a, b)) return [a, b];
+    do {
+      a = inRange[Math.floor(Math.random() * inRange.length)].idx;
+      b = inRange[Math.floor(Math.random() * inRange.length)].idx;
+    } while (a === b);
+    return [a, b];
   }
   
   if (count >= maxComparisons - 20) {
@@ -181,11 +187,19 @@ function getNextPair() {
       for (let i = 0; i < sorted.length - 1; i++) {
         const a = characters.indexOf(sorted[i]);
         const b = characters.indexOf(sorted[i + 1]);
+        if (!isSameAsLastPair(a, b)) return [a, b];
+        do {
+          a = inRange[Math.floor(Math.random() * inRange.length)].idx;
+          b = inRange[Math.floor(Math.random() * inRange.length)].idx;
+        } while (a === b);
         return [a, b];
       }
     }
     
     if (inRange.length < 2) {
+      attempts = 0;
+      let i, j;
+      
       min = Math.max(0, min - 50);  // 最小値を0以下にしないように調整
       max = max + 50;
       
@@ -193,7 +207,14 @@ function getNextPair() {
         .map((c, idx) => ({ c, idx }))
         .filter(({ c }) => c.score >= min && c.score < max);
         
-      attempts = 0;
+      if (inRange.length < 2) {
+        do {
+          i = inRange[Math.floor(Math.random() * inRange.length)].idx;
+          j = inRange[Math.floor(Math.random() * inRange.length)].idx;
+        } while (i === j);
+        return [i, j];
+      }
+      
       do {
         i = inRange[Math.floor(Math.random() * inRange.length)].idx;
         j = inRange[Math.floor(Math.random() * inRange.length)].idx;
@@ -214,6 +235,11 @@ function getNextPair() {
       for (let i = 0; i < sorted.length - 1; i++) {
         const a = characters.indexOf(sorted[i]);
         const b = characters.indexOf(sorted[i + 1]);
+        if (!isSameAsLastPair(a, b)) return [a, b];
+        do {
+          a = inRange[Math.floor(Math.random() * inRange.length)].idx;
+          b = inRange[Math.floor(Math.random() * inRange.length)].idx;
+        } while (a === b);
         return [a, b];
       }
     }
@@ -276,10 +302,18 @@ function displayPair([i, j]) {
   Bimg.onclick = () => vote(j, i);
 }
 
+// 最後の比較ペアと重複しないようにするチェック
+function isSameAsLastPair(i, j) {
+  const key = `${Math.min(i, j)}_${Math.max(i, j)}`;
+  return key === lastPairKey;
+}
+
+// 比較時に最後のペア情報を更新する
 function vote(winnerIndex, loserIndex) {
   updateElo(characters[winnerIndex], characters[loserIndex]);
   comparisonLog.add(`${winnerIndex}_${loserIndex}`);
   addWinRelation(winnerIndex, loserIndex);
+  lastPairKey = `${Math.min(winnerIndex, loserIndex)}_${Math.max(winnerIndex, loserIndex)}`;
   count++;
   countDisplay.textContent = `${count} / ${maxComparisons}回 比較中`;
   if (count >= maxComparisons) {
@@ -288,7 +322,6 @@ function vote(winnerIndex, loserIndex) {
     displayPair(getNextPair());
   }
 }
-
 function updateElo(winner, loser, k = 32) {
   const expected = 1 / (1 + Math.pow(10, (loser.score - winner.score) / 400));
   winner.score += Math.round(k * (1 - expected));
