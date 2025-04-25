@@ -240,12 +240,10 @@ function showResults() {
   resultDiv.appendChild(saveBtn);
 
   // Twitterでシェアするボタンを追加
-  if (!document.getElementById("twitter-share-button")) {
-    const shareButton = document.createElement("button");
-    shareButton.textContent = "Twitterでシェア";
-    shareButton.id = "twitter-share-button"; // ← IDを設定
-    shareButton.onclick = shareOnTwitter;
-    document.body.appendChild(shareButton);
+const shareButton = document.createElement("button");
+shareButton.textContent = "Twitterでシェア";
+shareButton.onclick = shareOnTwitter; // シェア関数を呼び出し
+document.body.appendChild(shareButton);
 }
 
 displayPair(getNextPair());
