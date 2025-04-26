@@ -184,8 +184,8 @@ function getNextPair() {
       }
     }
     for (let i = 0; i < sorted.length - 1; i++) {
-      const a = characters.indexOf(sorted[i]);
-      const b = characters.indexOf(sorted[i + 1]);
+      const a = Math.floor(Math.random() * characters.length);
+      const b = Math.floor(Math.random() * characters.length);
       if (!isSameAsLastPair(a, b)) {
         return [a, b];
       }
