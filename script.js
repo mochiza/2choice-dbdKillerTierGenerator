@@ -131,44 +131,73 @@ function groupByTier(characters) {
 }
 
 function getNextPair() {
-  // 特定範囲の比較を挟む（最後の20回 追加20回 追加40回）
-  if (count >= maxComparisons + 20) {
+  const sorted = [...characters].sort((a, b) => b.score - a.score);
+
+  function pickFromRange(min, max) {
     let attempts = 0;
+    let i, j;
+    const inRange = characters
+      .map((c, idx) => ({ c, idx }))
+      .filter(({ c }) => c.score >= min && c.score < max);
+
+    if (inRange.length < 2) return null;
+
     do {
-      const sorted = [...characters].sort((a, b) => b.score - a.score);
-      for (let i = 0; i < sorted.length - 1; i++) {
-        const a = characters.indexOf(sorted[i]);
-        const b = characters.indexOf(sorted[i + 1]);
-      }
+      i = inRange[Math.floor(Math.random() * inRange.length)].idx;
+      j = inRange[Math.floor(Math.random() * inRange.length)].idx;
       attempts++;
-    } while (isComparedOrInferable(a, b) && attempts < 50);
-    if (attempts < 50) {
-      return [a, b];
-    }
+    } while (
+      (i === j || isComparedOrInferable(i, j) || isSameAsLastPair(i, j)) &&
+      attempts < 50
+    );
+
+    if (attempts < 50) return [i, j];
+
+    attempts = 0;
     do {
-      const sorted = [...characters].sort((a, b) => b.score - a.score);
-      for (let i = 0; i < sorted.length - 1; i++) {
-        const a = characters.indexOf(sorted[i]);
-        const b = characters.indexOf(sorted[i + 1]);
-      }
+      i = inRange[Math.floor(Math.random() * inRange.length)].idx;
+      j = inRange[Math.floor(Math.random() * inRange.length)].idx;
       attempts++;
-    } while (hasBeenCompared(a, b) && attempts < 100);
-    if (attempts < 100) {
-      return [a, b];
-    }
-    const sorted = [...characters].sort((a, b) => b.score - a.score);
+    } while (
+      (i === j || hasBeenCompared(i, j) || isSameAsLastPair(i, j)) &&
+      attempts < 100
+    );
+
+    if (attempts < 100) return [i, j];
+
+    return null;
+  }
+
+  function pickClosestPair() {
     for (let i = 0; i < sorted.length - 1; i++) {
       const a = characters.indexOf(sorted[i]);
       const b = characters.indexOf(sorted[i + 1]);
+      if (!isComparedOrInferable(a, b) && !isSameAsLastPair(a, b)) {
+        return [a, b];
+      }
     }
-    if (!isSameAsLastPair(a, b)) return [a, b];
-    do {
-      a = inRange[Math.floor(Math.random() * inRange.length)].idx;
-      b = inRange[Math.floor(Math.random() * inRange.length)].idx;
-    } while (a === b);
-    return [a, b];
+    for (let i = 0; i < sorted.length - 1; i++) {
+      const a = characters.indexOf(sorted[i]);
+      const b = characters.indexOf(sorted[i + 1]);
+      if (!hasBeenCompared(a, b) && !isSameAsLastPair(a, b)) {
+        return [a, b];
+      }
+    }
+    for (let i = 0; i < sorted.length - 1; i++) {
+      const a = characters.indexOf(sorted[i]);
+      const b = characters.indexOf(sorted[i + 1]);
+      if (!isSameAsLastPair(a, b)) {
+        return [a, b];
+      }
+    }
+    return null;
   }
-  
+
+  if (count >= maxComparisons + 20) {
+    const pair = pickClosestPair();
+    if (pair) return pair;
+  }
+
   if (count >= maxComparisons - 20) {
     const ranges = [
       [1450, 1475],
@@ -178,92 +207,18 @@ function getNextPair() {
     ];
     const rangeIndex = Math.floor((count - (maxComparisons - 20)) / 5);
     const [min, max] = ranges[rangeIndex];
+    const pair = pickFromRange(min, max);
+    if (pair) return pair;
 
-    const inRange = characters
-      .map((c, idx) => ({ c, idx }))
-      .filter(({ c }) => c.score >= min && c.score < max);
+    // 範囲に十分なキャラがいない場合は広げてみる
+    const expanded = pickFromRange(Math.max(0, min - 50), max + 50);
+    if (expanded) return expanded;
 
-    if (inRange.length >= 2) {
-      let attempts = 0;
-      let i, j;
-      do {
-        i = inRange[Math.floor(Math.random() * inRange.length)].idx;
-        j = inRange[Math.floor(Math.random() * inRange.length)].idx;
-        attempts++;
-      } while (i === j || (isComparedOrInferable(i, j) && attempts < 50));
-      if (attempts < 50) {
-        return [i, j];
-      }
-      do {
-        i = inRange[Math.floor(Math.random() * inRange.length)].idx;
-        j = inRange[Math.floor(Math.random() * inRange.length)].idx;
-        attempts++;
-      } while (i === j || (hasBeenCompared(i, j) && attempts < 100));
-      if (attempts < 100) {
-        return [i, j];
-      }
-      const sorted = [...characters].sort((a, b) => b.score - a.score);
-      for (let i = 0; i < sorted.length - 1; i++) {
-        const a = characters.indexOf(sorted[i]);
-        const b = characters.indexOf(sorted[i + 1]);
-        if (!isSameAsLastPair(a, b)) return [a, b];
-        do {
-          a = inRange[Math.floor(Math.random() * inRange.length)].idx;
-          b = inRange[Math.floor(Math.random() * inRange.length)].idx;
-        } while (a === b);
-        return [a, b];
-      }
-    }
-    
-    if (inRange.length < 2) {
-      attempts = 0;
-      let i, j;
-      
-      min = Math.max(0, min - 50);  // 最小値を0以下にしないように調整
-      max = max + 50;
-      
-      inRange = characters
-        .map((c, idx) => ({ c, idx }))
-        .filter(({ c }) => c.score >= min && c.score < max);
-        
-      if (inRange.length < 2) {
-        do {
-          i = inRange[Math.floor(Math.random() * inRange.length)].idx;
-          j = inRange[Math.floor(Math.random() * inRange.length)].idx;
-        } while (i === j);
-        return [i, j];
-      }
-      
-      do {
-        i = inRange[Math.floor(Math.random() * inRange.length)].idx;
-        j = inRange[Math.floor(Math.random() * inRange.length)].idx;
-        attempts++;
-      } while (i === j || (isComparedOrInferable(i, j) && attempts < 50));
-      if (attempts < 50) {
-        return [i, j];
-      }
-      do {
-        i = inRange[Math.floor(Math.random() * inRange.length)].idx;
-        j = inRange[Math.floor(Math.random() * inRange.length)].idx;
-        attempts++;
-      } while (i === j || (hasBeenCompared(i, j) && attempts < 100));
-      if (attempts < 100) {
-        return [i, j];
-      }
-      const sorted = [...characters].sort((a, b) => b.score - a.score);
-      for (let i = 0; i < sorted.length - 1; i++) {
-        const a = characters.indexOf(sorted[i]);
-        const b = characters.indexOf(sorted[i + 1]);
-        if (!isSameAsLastPair(a, b)) return [a, b];
-        do {
-          a = inRange[Math.floor(Math.random() * inRange.length)].idx;
-          b = inRange[Math.floor(Math.random() * inRange.length)].idx;
-        } while (a === b);
-        return [a, b];
-      }
-    }
+    // 最後の手段：スコア順に近いペアを使う
+    const fallback = pickClosestPair();
+    if (fallback) return fallback;
   }
-  
+
   const unshown = characters.map((_, i) => i).filter(i => !shownCharacters.has(i));
   if (unshown.length >= 2) {
     let i = unshown[Math.floor(Math.random() * unshown.length)];
@@ -273,6 +228,7 @@ function getNextPair() {
     } while (j === i || isComparedOrInferable(i, j));
     return [i, j];
   }
+
   if (count < 40) {
     let i, j;
     do {
@@ -281,12 +237,9 @@ function getNextPair() {
     } while (i === j || isComparedOrInferable(i, j));
     return [i, j];
   } else {
-    const sorted = [...characters].sort((a, b) => b.score - a.score);
-    for (let i = 0; i < sorted.length - 1; i++) {
-      const a = characters.indexOf(sorted[i]);
-      const b = characters.indexOf(sorted[i + 1]);
-      if (!isComparedOrInferable(a, b)) return [a, b];
-    }
+    const pair = pickClosestPair();
+    if (pair) return pair;
+    // まれに全て詰まるケースのために再帰
     return getNextPair();
   }
 }
